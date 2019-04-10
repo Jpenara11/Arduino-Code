@@ -1,3 +1,4 @@
+
 /* CONTROL DE RIEGO: PARTE 1 (SENSORES)
    AUTORES: De la Peña Ramos, Jaime
             */
@@ -17,6 +18,10 @@ const int SensorTempYHum = 2; // Declarar pin 2 sensor de humedad y temperatura
 float valorHumedad = 0.0; // Variable donde se almacena el valor de la humedad leido por el DHT11
 float valorTemperatura = 0.0; // Variable donde se almacena el valor de la temperatura leido por el DHT11
 DHT dht(SensorTempYHum, DHT11); // Inicializar el sensor DHT11 (Temperatura y Humedad)
+
+const int SensorLluvia = A2; // Declarar pin A2 Sensor de Lluvia
+int valorSensorLluvia = 0; // Variable donde se almacena el valor leido por el SensorLluvia
+int valorSensorLluviaMap = 0; // Variable donde almacena el valor mapeado del SensorLluvia
 
 
 RTC_DS3231 rtc3231; // Inicializar RTC DS3231 (Reloj y Calendario)
@@ -55,5 +60,10 @@ void loop()
   }
 
   DateTime fechaActual = rtc3231.now(); // Obtener fecha actual
+
+  valorSensorLluvia = analogRead(SensorLluvia); // Lectura SensorLluvia
+  valorSensorLluviaMap = map(valorSensorLluvia, 0, 1023, 0, 10); // Mapear resultado SensorLluvia
+
+  Serial.println(valorSensorLluvia);
   
 }
