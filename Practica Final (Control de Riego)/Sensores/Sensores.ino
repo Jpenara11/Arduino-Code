@@ -25,7 +25,7 @@ int valorSensorLluviaMap = 0; // Variable donde almacena el valor mapeado del Se
 
 const int GpsRx = 4; // Declarar pin 4 GPS pin RX
 const int GpsTx = 3; // Declarar pin 3 GPS pin TX
-char localizacion = 0; // Declarar variable donde se almacena la localización leída por el GPS
+char localizacion; // Declarar variable donde se almacena la localización leída por el GPS
 SoftwareSerial gps(GpsRx, GpsTx); // Declarar objeto GPS
 
 
@@ -33,49 +33,50 @@ RTC_DS3231 rtc3231; // Inicializar RTC DS3231 (Reloj y Calendario)
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   
-  dht.begin(); // Se inicia el sensor de temperatura y humedad 
+ // dht.begin(); // Se inicia el sensor de temperatura y humedad 
    
-  if (! rtc3231.begin())// En caso de que no se consiga iniciar el reloj
-  {
-    Serial.println("No se ha podido detectar el RTC_DS3231"); // Se notifica por puerto serie
-    while (1); // Bucle infinito para no continuar el programa
-  }
+ // if (! rtc3231.begin())// En caso de que no se consiga iniciar el reloj
+ // {
+ //   Serial.println("No se ha podido detectar el RTC_DS3231"); // Se notifica por puerto serie
+ //   while (1); // Bucle infinito para no continuar el programa
+ // }
   
-  rtc3231.adjust(DateTime(F(__DATE__), F(__TIME__))); // Ajustar fecha y hora del reloj
+ // rtc3231.adjust(DateTime(F(__DATE__), F(__TIME__))); // Ajustar fecha y hora del reloj
 
   gps.begin(9600); // Inicializar GPS
 }
 
 void loop() 
 {
-  valorHigrometro = analogRead(HigrometroPin); // Lectura Higrometro
-  valorHigrometroMap = map(valorHigrometro, 0, 1023, 0, 10); // Mapear resultado Higrometro
-
-  valorFlexometro = analogRead(FlexometroPin); // Lectura Flexometro
-  valorFlexometroMap = map(valorFlexometro, 32, 85, 0, 90); // Mapear resultado Flexometro
+ // valorHigrometro = analogRead(HigrometroPin); // Lectura Higrometro
+  //valorHigrometroMap = map(valorHigrometro, 0, 1023, 0, 10); // Mapear resultado Higrometro
+ // valorFlexometro = analogRead(FlexometroPin); // Lectura Flexometro
+ // valorFlexometroMap = map(valorFlexometro, 32, 85, 0, 90); // Mapear resultado Flexometro
    
-  valorHumedad = dht.readHumidity(); // Leer la humedad relativa
-  valorTemperatura = dht.readTemperature(); // Leer la temperatura, por defecto en grados centígrados
+ // valorHumedad = dht.readHumidity(); // Leer la humedad relativa
+ // valorTemperatura = dht.readTemperature(); // Leer la temperatura, por defecto en grados centígrados
    
-  if (isnan(valorHumedad) || isnan(valorTemperatura)) // Comprobar si ha habido un error en la obtención datos
+  /*if (isnan(valorHumedad) || isnan(valorTemperatura)) // Comprobar si ha habido un error en la obtención datos
   {
     Serial.println("ERROR DHT11");
     return;
-  }
+  }*/
 
-  DateTime fechaActual = rtc3231.now(); // Obtener fecha actual
+  //DateTime fechaActual = rtc3231.now(); // Obtener fecha actual
 
-  valorSensorLluvia = analogRead(SensorLluvia); // Lectura SensorLluvia
-  valorSensorLluviaMap = map(valorSensorLluvia, 0, 1023, 0, 10); // Mapear resultado SensorLluvia
+  //valorSensorLluvia = analogRead(SensorLluvia); // Lectura SensorLluvia
+  //valorSensorLluviaMap = map(valorSensorLluvia, 0, 1023, 0, 10); // Mapear resultado SensorLluvia
 
-  Serial.println(valorSensorLluvia);
+  //Serial.println(valorSensorLluvia);
 
-  if (gps.available()) // Si el GPS está disponible
-  {
+  //if (gps.available()){ // Si el GPS está disponible
+  
     localizacion = gps.read(); // Leemos el dato de la localización
-    Serial.print(localizacion);
-  }
+    Serial.println(localizacion);
+ //}
+
+  delay(3000);
   
 }
