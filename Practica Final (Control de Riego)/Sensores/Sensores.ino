@@ -4,6 +4,7 @@
 #include <Wire.h>
 #include "RTClib.h"
 #include <DHT.h>
+#include <SoftwareSerial.h>
 
 const int HigrometroPin = A0; // Declarar pin A0 Higrometro
 int valorHigrometro = 0; // Variable donde se almacena el valor leido por el Higrometro
@@ -22,6 +23,11 @@ const int SensorLluvia = A2; // Declarar pin A2 Sensor de Lluvia
 int valorSensorLluvia = 0; // Variable donde se almacena el valor leido por el SensorLluvia
 int valorSensorLluviaMap = 0; // Variable donde almacena el valor mapeado del SensorLluvia
 
+const int GpsRx = 4; // Declarar pin 4 GPS pin RX
+const int GpsTx = 3; // Declarar pin 3 GPS pin TX
+char localizacion = 0; // Declarar variable donde se almacena la localización leída por el GPS
+SoftwareSerial gps(GpsRx, GpsTx); // Declarar objeto GPS
+
 
 RTC_DS3231 rtc3231; // Inicializar RTC DS3231 (Reloj y Calendario)
 
@@ -39,6 +45,7 @@ void setup()
   
   rtc3231.adjust(DateTime(F(__DATE__), F(__TIME__))); // Ajustar fecha y hora del reloj
 
+  gps.begin(9600); // Inicializar GPS
 }
 
 void loop() 
@@ -64,5 +71,11 @@ void loop()
   valorSensorLluviaMap = map(valorSensorLluvia, 0, 1023, 0, 10); // Mapear resultado SensorLluvia
 
   Serial.println(valorSensorLluvia);
+
+  if (gps.available()) // Si el GPS está disponible
+  {
+    localizacion = gps.read(); // Leemos el dato de la localización
+    Serial.print(localizacion);
+  }
   
 }
