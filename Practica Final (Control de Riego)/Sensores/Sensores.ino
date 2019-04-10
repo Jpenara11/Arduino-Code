@@ -1,4 +1,3 @@
-
 /* CONTROL DE RIEGO: PARTE 1 (SENSORES)
    AUTORES: De la Peña Ramos, Jaime
             */
