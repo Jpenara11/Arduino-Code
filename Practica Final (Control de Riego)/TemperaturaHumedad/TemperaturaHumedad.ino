@@ -5,8 +5,7 @@
       USAL 2018 - 2019
 */
 
-#include <Wire.h>
-#include "RTClib.h"
+
 #include <DHT.h>
 #include <SoftwareSerial.h>
 
@@ -24,7 +23,7 @@ void setup()
 
 void loop() 
 {
-
+  delay(5000);
  
   valorHumedad = dht.readHumidity(); // Leer la humedad relativa
   valorTemperatura = dht.readTemperature(); // Leer la temperatura, por defecto en grados centígrados
@@ -36,5 +35,5 @@ void loop()
       Serial.println(valorHumedad);
       Serial.println(valorTemperatura);
     }
-    delay(3000);
+    
 }
