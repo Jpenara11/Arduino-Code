@@ -26,8 +26,8 @@ char teclas[FIL_TECLADO][COL_TECLADO]
   { '*','0','#', 'D' }
 };
 
-const byte filasPins[FIL_TECLADO] = { 12, 10, 9, 8 };
-const byte columnasPins[COL_TECLADO] = { 7, 6, 5, 4 };
+const byte filasPins[FIL_TECLADO] = { 9, 8, 7, 6 };
+const byte columnasPins[COL_TECLADO] = { 5, 4, 3, 2 };
 Keypad tecladoMembrana = Keypad(makeKeymap(teclas), filasPins, columnasPins, FIL_TECLADO, COL_TECLADO);
 char teclaPulsada;
 char contrasena[TAM_CONTRASENA] = "1998";
