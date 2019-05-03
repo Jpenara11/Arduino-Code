@@ -27,7 +27,7 @@ int valorSensorLluviaMap = 0; // Variable donde almacena el valor mapeado del Se
 
 const int GpsRx = 4; // Declarar pin 4 GPS pin RX
 const int GpsTx = 3; // Declarar pin 3 GPS pin TX
-char localizacion = ' '; // Declarar variable donde se almacena la localización leída por el GPS
+String localizacion; // Declarar variable donde se almacena la localización leída por el GPS
 SoftwareSerial gps(4,3); // Declarar objeto GPS
 
 const int EntradaServo = 6; // Declarar pin 6 servo
@@ -36,10 +36,27 @@ int cantidadRiego = 5; // Número de veces que el servo se desplaza para regar
 
 
 RTC_DS3231 rtc3231; // Inicializar RTC DS3231 (Reloj y Calendario)
+String fechaYhoraActual;
+
+typedef struct structInfo
+{
+  int higrometro;
+  int sensorLluvia;
+  int flexometro;
+  float humedad;
+  float temperatura;
+  String fechaYhora;
+  String ubicacion;
+}Info;
+
+Info informacion;
+
+void enviarEstructura(byte *punteroAestructura, int longitudEstructura);
+String horaYFechaActualString (DateTime fechaActual);
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   
   dht.begin(); // Se inicia el sensor de temperatura y humedad 
    
@@ -56,10 +73,12 @@ void setup()
   pinMode(EntradaServo, OUTPUT);
   servo.attach(EntradaServo); // Vincular el servo al pin 6
   servo.write(0); // Se situa el ángulo de este en 0 grados
+
+  Wire.begin();
 }
 
 void loop() 
-{
+{/*
   valorHigrometro = analogRead(HigrometroPin); // Lectura Higrometro
   valorHigrometroMap = map(valorHigrometro, 0, 1023, 100, 0); // Mapear resultado Higrometro
 
@@ -82,10 +101,14 @@ void loop()
     Serial.println("ERROR DHT11");
     return;
   }
+*/
+  /*DateTime fechaActual = rtc3231.now(); // Obtener fecha actual
+  
+  fechaYhoraActual = horaYFechaActualString(fechaActual); // Convertir fecha y hora a String EJ 14:56 3/5
 
-  DateTime fechaActual = rtc3231.now(); // Obtener fecha actual
+  Serial.println(fechaYhoraActual);*/
 
-
+/*
   if (gps.available()) // Si el GPS está disponible
   {
     localizacion = gps.read(); // Leemos el dato de la localización
@@ -112,7 +135,53 @@ void loop()
       delay(500);
     }
   }
-  
+*/
+  valorHigrometroMap = 45;
+  valorSensorLluviaMap = 55;
+  valorFlexometroMap = 33;
+  valorHumedad = 23.0;
+  valorTemperatura = 26.2;
+  fechaYhoraActual = "14:56 3/5";
+  localizacion = "Salamanca";
+
+  informacion.higrometro = valorHigrometroMap;
+  informacion.sensorLluvia = valorSensorLluviaMap;
+  informacion.flexometro = valorFlexometroMap;
+  informacion.humedad = valorHumedad;
+  informacion.temperatura = valorTemperatura;
+  informacion.fechaYhora = fechaYhoraActual;
+  informacion.ubicacion = localizacion;
+
+  // Comenzamos la transmisión al dispositivo 1
+    Wire.beginTransmission(1);
+ 
+    // Enviamos un struct con la informacion obtenida
+    enviarEstructura((byte*)&informacion, sizeof(informacion));
+ 
+    // Paramos la transmisión
+    Wire.endTransmission();
+ 
  delay(3000);
   
+}
+
+void enviarEstructura(byte *punteroAestructura, int longitudEstructura)
+{
+  Wire.write(punteroAestructura, longitudEstructura);
+ //Serial.write(punteroAestructura, longitudEstructura);
+}
+
+String horaYFechaActualString(DateTime fechaActual)
+{
+  String datos;
+
+  datos = fechaActual.hour();
+  datos = datos + ':';
+  datos = datos + fechaActual.minute();
+  datos = datos + ' ';
+  datos = datos + fechaActual.day();
+  datos = datos + '/';
+  datos = datos + fechaActual.month();
+
+  return datos;
 }

@@ -6,10 +6,24 @@
 
 #include <Wire.h>
 
+typedef struct structInfo
+{
+  int higrometro;
+  int sensorLluvia;
+  int flexometro;
+  float humedad;
+  float temperatura;
+  String fechaYhora;
+  String ubicacion;
+}Info;
+
+Info informacionRecibida;
+void recibirEstructura(byte *punteroAestructura, int longitudEstructura);
+
 void setup() {
   // Pines en modo salida
-  pinMode(13, OUTPUT);
 
+//recibirEstructura((byte*)&informacionRecibida, sizeof(informacionRecibida));
 
   // Unimos este dispositivo al bus I2C con dirección 1
   Wire.begin(1);
@@ -19,6 +33,8 @@ void setup() {
 
   // Iniciamos el monitor serie para monitorear la comunicación
   Serial.begin(9600);
+
+  pinMode(13, OUTPUT);
 }
 
 void loop() {
@@ -30,25 +46,24 @@ void loop() {
 // recibirá toda la información que hayamos pasado a través de la sentencia Wire.write
 void receiveEvent(int howMany) {
 
-  int pinOut = 0;
-  int estado = 0;
 
-  // Si hay dos bytes disponibles
-  if (Wire.available() == 2)
-  {
-    // Leemos el primero que será el pin
-    pinOut = Wire.read();
-    Serial.print("LED ");
-    Serial.println(pinOut);
-  }
-  // Si hay un byte disponible
-  if (Wire.available() == 1)
-  {
-    estado = Wire.read();
-    Serial.print("Estado ");
-    Serial.println(estado);
-  }
+    informacionRecibida = (Info) Wire.read();
+    if(informacionRecibida.higrometro == 45)
+  {  digitalWrite(13, HIGH);
+    delay(1000);
+    digitalWrite(13, LOW);
+   }
 
-  // Activamos/desactivamos salida
-  digitalWrite(pinOut,estado);
+   
+}
+
+void recibirEstructura(byte *punteroAestructura, int longitudEstructura)
+{
+if(Serial.available() < sizeof(informacionRecibida)) return;
+  Serial.readBytes(punteroAestructura, longitudEstructura);
+
+  if(informacionRecibida.higrometro == 45)
+  {  digitalWrite (13, HIGH);
+   }
+  
 }
