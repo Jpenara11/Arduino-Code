@@ -1,3 +1,7 @@
+#include <EasyTransfer.h>
+EasyTransfer ETin;
+
+
 /* CONTROL DE RIEGO: PARTE 1 (SENSORES) - ARDUINO MAESTRO
    AUTORES: De la Peña Ramos, Jaime
 */
@@ -38,7 +42,7 @@ int cantidadRiego = 5; // Número de veces que el servo se desplaza para regar
 RTC_DS3231 rtc3231; // Inicializar RTC DS3231 (Reloj y Calendario)
 String fechaYhoraActual;
 
-typedef struct structInfo
+struct SEND_DATA_STRUCTURE
 {
   int higrometro;
   int sensorLluvia;
@@ -47,9 +51,10 @@ typedef struct structInfo
   float temperatura;
   String fechaYhora;
   String ubicacion;
-}Info;
+  char pepe[4] = "SAL";
+};
 
-Info informacion;
+struct SEND_DATA_STRUCTURE informacion;
 
 void enviarEstructura(byte *punteroAestructura, int longitudEstructura);
 String horaYFechaActualString (DateTime fechaActual);
@@ -75,6 +80,8 @@ void setup()
   servo.write(0); // Se situa el ángulo de este en 0 grados
 
   Wire.begin();
+
+  ETin.begin(details(informacion), &Serial);
 }
 
 void loop() 
@@ -149,17 +156,11 @@ void loop()
   informacion.flexometro = valorFlexometroMap;
   informacion.humedad = valorHumedad;
   informacion.temperatura = valorTemperatura;
-  informacion.fechaYhora = fechaYhoraActual;
-  informacion.ubicacion = localizacion;
+  informacion.fechaYhora = "14:56 3/5";
+  informacion.ubicacion = "Salamanca";
+  
 
-  // Comenzamos la transmisión al dispositivo 1
-    Wire.beginTransmission(1);
- 
-    // Enviamos un struct con la informacion obtenida
-    enviarEstructura((byte*)&informacion, sizeof(informacion));
- 
-    // Paramos la transmisión
-    Wire.endTransmission();
+  ETin.sendData();
  
  delay(3000);
   

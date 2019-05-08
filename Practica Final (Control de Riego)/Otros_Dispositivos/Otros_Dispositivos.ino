@@ -1,3 +1,5 @@
+#include <EasyTransfer.h>
+
 /* CONTROL DE RIEGO: PARTE 2 (OTROS DISPOSITIVOS)
    AUTORES: De la Peña Ramos, Jaime
             */
@@ -15,6 +17,22 @@
 #define COL_TECLADO 4
 
 #define TAM_CONTRASENA 5
+
+EasyTransfer ETout;
+
+struct RECEIVE_DATA_STRUCTURE
+{
+  int higrometro;
+  int sensorLluvia;
+  int flexometro;
+  float humedad;
+  float temperatura;
+  String fechaYhora;
+  String ubicacion;
+  char pepe[4];
+};
+
+struct RECEIVE_DATA_STRUCTURE recibido;
 
 LiquidCrystal_I2C lcd(POS_LCD, COL, FIL);  // Inicia el LCD con los datos introducidos
 
@@ -35,34 +53,77 @@ char claveUsuario[TAM_CONTRASENA];
 int indice = 0;
 int alarma = 1;
 
-const int pinBuzzer = 11;
+const int Buzzer = 11;
+
+const int PIR = 12; // Pin de entrada para el sensor PIR (Passive Infrared Sensor)
+int estadoPIR = LOW; // De inicio el PIR no detecta movimiento
+int valorPIR = 0;  // Estado del PIR
 
 void imprimirFecha(DateTime fecha);
 
 void setup()
 {
   Serial.begin(9600);
-  lcd.begin();                      
+  lcd.init();                      
   lcd.backlight();
 
-  pinMode(pinBuzzer, OUTPUT);
+  pinMode(Buzzer, OUTPUT);
+  pinMode(PIR, INPUT);
+
+  ETout.begin(details(recibido), &Serial);
 }
 
 void loop() 
-{/*
-  imprimirLCDTempyHum(26,55.5);
+{
+  /*imprimirLCDTempyHum(26,55.5);
   delay(10000);
   imprimirLocalizacionFecha("Salamanca","22-Abril");
-  delay(10000);
-  */
+  delay(10000);*/
+  /*
   delay(5000);
-  alarma = 1;
-  activarAlarma(alarma);
+
+  valorPIR = digitalRead(PIR);
+  
+  if (valorPIR == HIGH)   // Se activa el sensor
+  { 
+    if (estadoPIR == LOW)  // Si anteriormente estaba apagado
+    {
+      Serial.println("Sensor activado");
+      estadoPIR = HIGH; // Este se enciende
+      alarma = 1;
+      activarAlarma(alarma);
+    }
+  } 
+   else   // Si no esta activado
+   {
+      if (estadoPIR == HIGH)  // Y antes estaba encendido
+      {
+        Serial.println("Sensor parado");
+        estadoPIR = LOW; // Este se para
+        alarma = 0;
+      }
+   }
+ */
+
+ if(ETout.receiveData())
+ {
+  Serial.println(recibido.higrometro);
+  Serial.println(recibido.sensorLluvia);
+  Serial.println(recibido.flexometro);
+  Serial.println(recibido.humedad);
+  Serial.println(recibido.temperatura);
+  Serial.println(recibido.fechaYhora);
+  Serial.println(recibido.ubicacion);
+  Serial.println(recibido.pepe);
+  
+ }
+
+ delay(1000);
 }
 
 void activarAlarma(int alarma)
 {
-  analogWrite(pinBuzzer, HIGH);
+  analogWrite(Buzzer, HIGH);
   Serial.println("ALARMA!!");
   while(alarma == 1)
   {
@@ -81,7 +142,7 @@ void activarAlarma(int alarma)
       if(strcmp(claveUsuario, contrasena) == 0)
       {
         Serial.println("Contraseña: Correcta");
-        analogWrite(pinBuzzer, LOW);
+        analogWrite(Buzzer, LOW);
         alarma = 0;
       }
       else
