@@ -55,8 +55,13 @@ int alarma = 1;
 const int Buzzer = 11;
 
 const int PIR = 12; // Pin de entrada para el sensor PIR (Passive Infrared Sensor)
-int estadoPIR = LOW; // De inicio el PIR no detecta movimiento
-int valorPIR = 0;  // Estado del PIR
+int estadoPIR = -1; // 4 Estados (-1, 0 ,1 y 2)
+int valorPIR = 0;  // 
+
+const int SensorLlama = 10; // Pin de entrada para el sensor de Llama Infrarrojo
+int valorSensorLlama = 1; // Estado sensor Llama
+
+const int Led = 12;
 
 void imprimirFecha(DateTime fecha);
 
@@ -67,7 +72,9 @@ void setup()
   lcd.backlight();
 
   pinMode(Buzzer, OUTPUT);
-  pinMode(PIR, INPUT);
+  pinMode(PIR, INPUT_PULLUP);
+  pinMode(SensorLlama, INPUT);
+  pinMode(Led, OUTPUT);
 
   ETout.begin(details(recibido), &Serial);
 }
@@ -78,31 +85,67 @@ void loop()
   delay(10000);
   imprimirLocalizacionFecha("Salamanca","22-Abril");
   delay(10000);*/
-  /*
-  delay(5000);
 
   valorPIR = digitalRead(PIR);
+
+  switch(estadoPIR)
+  {
+    case -1: // Carga condensadores pre-inicio
+            delay(2000); // Esperamos 20 segundos a que se carguen los condensadores
+            estadoPIR = 0;
+            break;
+            
+    case 0: // Alarma apagada, esperando a que se el usuario la inicie
+            if (valorBoton == 0)
+            {
+              estadoPIR = 1;
+              //digitalWrite(Led, HIGH);
+              //delay(5000); // Esperamos 10 segundos a que el usuario se aleje
+              //digitalWrite(Led, LOW);
+              //avisar por LCD alejarse
+            }
+            break;
+            
+     case 1:
+            Serial.println("ESTAMOS EN EL ESTADO 1");
+            if (valorPIR == HIGH) estadoPIR = 2; 
+            else estadoPIR = 1;
+            break;
+
+     case 2:  
+            while(valorBoton != 0)
+            {
+              Serial.println("ALARMA ACTIVADA");
+              digitalWrite(Led, HIGH);
+              digitalWrite(Buzzer, HIGH);
+              delay(500);
+              digitalWrite(Led, LOW);
+              digitalWrite(Buzzer, LOW);
+              delay(500);
+              delay(1000);
+              valorBoton = digitalRead(boton);
+            }
+            digitalWrite(Led, LOW);
+            estadoPIR = -1;
+            digitalWrite(Led, HIGH);
+            delay(5000); //Alarma desactivada
+            Serial.println("ALARMA DESACTIVADA");
+            digitalWrite(Led, LOW);
+            break; 
+  }
   
-  if (valorPIR == HIGH)   // Se activa el sensor
-  { 
-    if (estadoPIR == LOW)  // Si anteriormente estaba apagado
-    {
-      Serial.println("Sensor activado");
-      estadoPIR = HIGH; // Este se enciende
-      alarma = 1;
-      activarAlarma(alarma);
-    }
-  } 
-   else   // Si no esta activado
-   {
-      if (estadoPIR == HIGH)  // Y antes estaba encendido
-      {
-        Serial.println("Sensor parado");
-        estadoPIR = LOW; // Este se para
-        alarma = 0;
-      }
-   }
- */
+
+ valorSensorLlama = digitalRead(SensorLlama);
+
+ if (valorSensorLlama == LOW)
+ {
+    digitalWrite(Led, HIGH);
+    digitalWrite(Buzzer, HIGH);
+    delay(500);
+    digitalWrite(Led, LOW);
+    digitalWrite(Buzzer, LOW);
+    delay(500);
+ }
 
  if(ETout.receiveData())
  {
