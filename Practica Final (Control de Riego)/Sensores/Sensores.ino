@@ -1,15 +1,14 @@
-#include <EasyTransfer.h>
-EasyTransfer ETin;
-
-
 /* CONTROL DE RIEGO: PARTE 1 (SENSORES) - ARDUINO MAESTRO
    AUTORES: De la Peña Ramos, Jaime
 */
+#include <EasyTransfer.h>
 #include <Wire.h>
 #include <DHT.h>
 #include <RTClib.h>
 #include <Servo.h>
 #include <SoftwareSerial.h>
+
+EasyTransfer ETin;
 
 const int HigrometroPin = A0; // Declarar pin A0 Higrometro
 int valorHigrometro = 0; // Variable donde se almacena el valor leido por el Higrometro
@@ -19,6 +18,7 @@ const int FlexometroPin = A1; // Declarar pin A1 Flexometro
 int valorFlexometro = 0; // Variable donde se almacena el valor leido por el Flexometro
 int valorFlexometroMap = 0; // Variable donde almacena el valor mapeado del Flexometro
 String estadoTallo; // Variable donde se almacena el estado del tallo tiene 3 (Recto, Torcido, +Torcido)
+char arrayEstadoTallo[9];
 
 const int SensorTempYHum = 2; // Declarar pin 2 sensor de humedad y temperatura
 float valorHumedad = 0.0; // Variable donde se almacena el valor de la humedad leido por el DHT11
@@ -32,6 +32,7 @@ int valorSensorLluviaMap = 0; // Variable donde almacena el valor mapeado del Se
 const int GpsRx = 4; // Declarar pin 4 GPS pin RX
 const int GpsTx = 3; // Declarar pin 3 GPS pin TX
 String localizacion; // Declarar variable donde se almacena la localización leída por el GPS
+char arrayLocalizacion[30];
 SoftwareSerial gps(4,3); // Declarar objeto GPS
 
 const int EntradaServo = 6; // Declarar pin 6 servo
@@ -41,6 +42,7 @@ int cantidadRiego = 5; // Número de veces que el servo se desplaza para regar
 
 RTC_DS3231 rtc3231; // Inicializar RTC DS3231 (Reloj y Calendario)
 String fechaYhoraActual;
+char arrayHoraYFecha[12];
 
 struct SEND_DATA_STRUCTURE
 {
@@ -49,9 +51,9 @@ struct SEND_DATA_STRUCTURE
   int flexometro;
   float humedad;
   float temperatura;
-  String fechaYhora;
-  String ubicacion;
-  char pepe[4] = "SAL";
+  char fechaYhora[12];
+  char ubicacion[30];
+  char estadoTallo[9];
 };
 
 struct SEND_DATA_STRUCTURE informacion;
@@ -113,8 +115,6 @@ void loop()
   
   fechaYhoraActual = horaYFechaActualString(fechaActual); // Convertir fecha y hora a String EJ 14:56 3/5
 
-  Serial.println(fechaYhoraActual);*/
-
 /*
   if (gps.available()) // Si el GPS está disponible
   {
@@ -149,27 +149,28 @@ void loop()
   valorHumedad = 23.0;
   valorTemperatura = 26.2;
   fechaYhoraActual = "14:56 3/5";
-  localizacion = "Salamanca";
+  localizacion = "N 40º 57.6401 W 005º 40.14964";
+  estadoTallo = "+Torcido";
 
+  fechaYhoraActual.toCharArray(arrayHoraYFecha,12);
+  localizacion.toCharArray(arrayLocalizacion, 30);
+  estadoTallo.toCharArray(arrayEstadoTallo, 9);
+  
   informacion.higrometro = valorHigrometroMap;
   informacion.sensorLluvia = valorSensorLluviaMap;
   informacion.flexometro = valorFlexometroMap;
   informacion.humedad = valorHumedad;
   informacion.temperatura = valorTemperatura;
-  informacion.fechaYhora = "14:56 3/5";
-  informacion.ubicacion = "Salamanca";
+  memcpy(informacion.fechaYhora, arrayHoraYFecha, strlen(arrayHoraYFecha)+1);
+  memcpy(informacion.ubicacion, arrayLocalizacion, strlen(arrayLocalizacion)+1);
+  memcpy(informacion.estadoTallo, arrayEstadoTallo, strlen(arrayEstadoTallo)+1);
+
   
 
-  ETin.sendData();
+  //ETin.sendData();
  
  delay(3000);
   
-}
-
-void enviarEstructura(byte *punteroAestructura, int longitudEstructura)
-{
-  Wire.write(punteroAestructura, longitudEstructura);
- //Serial.write(punteroAestructura, longitudEstructura);
 }
 
 String horaYFechaActualString(DateTime fechaActual)

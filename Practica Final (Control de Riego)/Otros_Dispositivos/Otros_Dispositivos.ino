@@ -1,8 +1,7 @@
-#include <EasyTransfer.h>
-
 /* CONTROL DE RIEGO: PARTE 2 (OTROS DISPOSITIVOS)
    AUTORES: De la Peña Ramos, Jaime
             */
+#include <EasyTransfer.h>
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 #include <RTClib.h>
@@ -27,9 +26,9 @@ struct RECEIVE_DATA_STRUCTURE
   int flexometro;
   float humedad;
   float temperatura;
-  String fechaYhora;
-  String ubicacion;
-  char pepe[4];
+  char fechaYhora[12];
+  char ubicacion[30];
+  char estadoTallo[9];
 };
 
 struct RECEIVE_DATA_STRUCTURE recibido;
@@ -64,7 +63,7 @@ void imprimirFecha(DateTime fecha);
 void setup()
 {
   Serial.begin(9600);
-  lcd.init();                      
+  lcd.begin();                      
   lcd.backlight();
 
   pinMode(Buzzer, OUTPUT);
@@ -114,7 +113,7 @@ void loop()
   Serial.println(recibido.temperatura);
   Serial.println(recibido.fechaYhora);
   Serial.println(recibido.ubicacion);
-  Serial.println(recibido.pepe);
+  Serial.println(recibido.estadoTallo);
   
  }
 
