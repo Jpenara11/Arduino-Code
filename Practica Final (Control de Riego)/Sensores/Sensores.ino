@@ -25,10 +25,6 @@ float valorHumedad = 0.0; // Variable donde se almacena el valor de la humedad l
 float valorTemperatura = 0.0; // Variable donde se almacena el valor de la temperatura leido por el DHT11
 DHT dht(SensorTempYHum, DHT11); // Inicializar el sensor DHT11 (Temperatura y Humedad)
 
-const int SensorLluvia = A2; // Declarar pin A2 Sensor de Lluvia
-int valorSensorLluvia = 0; // Variable donde se almacena el valor leido por el SensorLluvia
-int valorSensorLluviaMap = 0; // Variable donde almacena el valor mapeado del SensorLluvia
-
 const int GpsRx = 4; // Declarar pin 4 GPS pin RX
 const int GpsTx = 3; // Declarar pin 3 GPS pin TX
 String localizacion; // Declarar variable donde se almacena la localización leída por el GPS
@@ -47,8 +43,6 @@ char arrayHoraYFecha[12];
 struct SEND_DATA_STRUCTURE
 {
   int higrometro;
-  int sensorLluvia;
-  int flexometro;
   float humedad;
   float temperatura;
   char fechaYhora[12];
@@ -58,7 +52,6 @@ struct SEND_DATA_STRUCTURE
 
 struct SEND_DATA_STRUCTURE informacion;
 
-void enviarEstructura(byte *punteroAestructura, int longitudEstructura);
 String horaYFechaActualString (DateTime fechaActual);
 
 void setup()
@@ -90,9 +83,6 @@ void loop()
 {/*
   valorHigrometro = analogRead(HigrometroPin); // Lectura Higrometro
   valorHigrometroMap = map(valorHigrometro, 0, 1023, 100, 0); // Mapear resultado Higrometro
-
-  valorSensorLluvia = analogRead(SensorLluvia); // Lectura SensorLluvia
-  valorSensorLluviaMap = map(valorSensorLluvia, 0, 1023, 100, 0); // Mapear resultado SensorLluvia
 
   valorFlexometro = analogRead(FlexometroPin); // Lectura Flexometro
   valorFlexometroMap = map(valorFlexometro, 32, 85, 1, 10); // Mapear resultado Flexometro
@@ -144,8 +134,6 @@ void loop()
   }
 */
   valorHigrometroMap = 45;
-  valorSensorLluviaMap = 55;
-  valorFlexometroMap = 33;
   valorHumedad = 23.0;
   valorTemperatura = 26.2;
   fechaYhoraActual = "14:56 3/5";
@@ -157,8 +145,6 @@ void loop()
   estadoTallo.toCharArray(arrayEstadoTallo, 9);
   
   informacion.higrometro = valorHigrometroMap;
-  informacion.sensorLluvia = valorSensorLluviaMap;
-  informacion.flexometro = valorFlexometroMap;
   informacion.humedad = valorHumedad;
   informacion.temperatura = valorTemperatura;
   memcpy(informacion.fechaYhora, arrayHoraYFecha, strlen(arrayHoraYFecha)+1);

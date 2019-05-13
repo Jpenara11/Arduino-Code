@@ -22,8 +22,6 @@ EasyTransfer ETout;
 struct RECEIVE_DATA_STRUCTURE
 {
   int higrometro;
-  int sensorLluvia;
-  int flexometro;
   float humedad;
   float temperatura;
   char fechaYhora[12];
@@ -56,12 +54,15 @@ const int Buzzer = 11;
 
 const int PIR = 12; // Pin de entrada para el sensor PIR (Passive Infrared Sensor)
 int estadoPIR = -1; // 4 Estados (-1, 0 ,1 y 2)
-int valorPIR = 0;  // 
+int valorPIR = LOW;  // De inicio el PIR está apagado
 
 const int SensorLlama = 10; // Pin de entrada para el sensor de Llama Infrarrojo
 int valorSensorLlama = 1; // Estado sensor Llama
 
 const int Led = 12;
+
+int valorHigrometro;
+int valor
 
 void imprimirFecha(DateTime fecha);
 
@@ -87,6 +88,7 @@ void loop()
   delay(10000);*/
 
   valorPIR = digitalRead(PIR);
+  teclaPulsada = tecladoMembrana.getKey();
 
   switch(estadoPIR)
   {
@@ -96,13 +98,14 @@ void loop()
             break;
             
     case 0: // Alarma apagada, esperando a que se el usuario la inicie
-            if (valorBoton == 0)
+            if (teclaPulsada == 'A')
             {
               estadoPIR = 1;
-              //digitalWrite(Led, HIGH);
-              //delay(5000); // Esperamos 10 segundos a que el usuario se aleje
-              //digitalWrite(Led, LOW);
-              //avisar por LCD alejarse
+              digitalWrite(Led, HIGH);
+              delay(5000); // Esperamos 10 segundos a que el usuario se aleje
+              digitalWrite(Led, LOW);
+              
+              //AVISAR LCD QUE SE ALEJE
             }
             break;
             
@@ -113,7 +116,7 @@ void loop()
             break;
 
      case 2:  
-            while(valorBoton != 0)
+          /*  while(valorBoton != 0)
             {
               Serial.println("ALARMA ACTIVADA");
               digitalWrite(Led, HIGH);
@@ -126,11 +129,14 @@ void loop()
               valorBoton = digitalRead(boton);
             }
             digitalWrite(Led, LOW);
+            */
+            alarma = 1;
+            activarAlarma(alarma);
             estadoPIR = -1;
             digitalWrite(Led, HIGH);
             delay(5000); //Alarma desactivada
             Serial.println("ALARMA DESACTIVADA");
-            digitalWrite(Led, LOW);
+            digitalWrite(Led, LOW);*/
             break; 
   }
   
@@ -150,13 +156,16 @@ void loop()
  if(ETout.receiveData())
  {
   Serial.println(recibido.higrometro);
-  Serial.println(recibido.sensorLluvia);
-  Serial.println(recibido.flexometro);
   Serial.println(recibido.humedad);
   Serial.println(recibido.temperatura);
   Serial.println(recibido.fechaYhora);
   Serial.println(recibido.ubicacion);
   Serial.println(recibido.estadoTallo);
+
+  String fechaYhoraString(recibido.fechaYhora);
+
+  //COPIAR A NUEVAS VARIABLES
+  
   
  }
 
