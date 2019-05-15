@@ -25,7 +25,7 @@ struct RECEIVE_DATA_STRUCTURE
   float humedad;
   float temperatura;
   char fechaYhora[12];
-  char ubicacion[30];
+  char ubicacion[23];
   char estadoTallo[9];
 };
 
@@ -82,7 +82,7 @@ void setup()
 void loop() 
 {
 
-  valorPIR = digitalRead(PIR);
+ /* valorPIR = digitalRead(PIR);
   teclaPulsada = tecladoMembrana.getKey();
 
   switch(estadoPIR)
@@ -144,7 +144,7 @@ void loop()
     digitalWrite(Buzzer, LOW);
     delay(500);
  }
-
+*/
  if(ETout.receiveData())
  {
   Serial.println(recibido.higrometro);
@@ -165,15 +165,16 @@ void loop()
   ubicacionLCD = ubicacionString;
   estadoTalloLCD = estadoTalloString;
 
-  imprimirLCDTempyHum(26,55.5);
+  imprimirLCDTempyHum(temperaturaLCD,humedadLCD);
   delay(10000);
   
-  imprimirLocalizacionFecha("Salamanca","22-Abril");
+  imprimirLocalizacionFecha(ubicacionLCD,fechaLCD);
   delay(10000);
 
-  imprimirHumedadTierraYTallo(50,"+Torcido");
+  imprimirHumedadTierraYTallo(higrometroLCD,estadoTalloLCD);
   delay(10000);
  }
+ delay(3000);
  
 }
 
@@ -245,10 +246,10 @@ void imprimirLocalizacionFecha(String localizacion, String fecha)
 {
    lcd.clear();
    lcd.setCursor(0,0);
-   lcd.print("LOC: ");
+   lcd.print("L: ");
    lcd.print(localizacion);
    lcd.setCursor(0,1);
-   lcd.print("FECHA: ");
+   lcd.print("HYF: ");
    lcd.print(fecha);
 }
 

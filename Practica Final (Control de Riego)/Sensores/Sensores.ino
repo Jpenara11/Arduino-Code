@@ -46,7 +46,7 @@ struct SEND_DATA_STRUCTURE
   float humedad;
   float temperatura;
   char fechaYhora[12];
-  char ubicacion[30];
+  char ubicacion[23];
   char estadoTallo[9];
 };
 
@@ -137,11 +137,11 @@ void loop()
   valorHumedad = 23.0;
   valorTemperatura = 26.2;
   fechaYhoraActual = "14:56 3/5";
-  localizacion = "N 40º 57.6401 W 005º 40.14964";
+  localizacion = "N 40,57 O 5,40";
   estadoTallo = "+Torcido";
 
   fechaYhoraActual.toCharArray(arrayHoraYFecha,12);
-  localizacion.toCharArray(arrayLocalizacion, 30);
+  localizacion.toCharArray(arrayLocalizacion, 23);
   estadoTallo.toCharArray(arrayEstadoTallo, 9);
   
   informacion.higrometro = valorHigrometroMap;
@@ -153,7 +153,7 @@ void loop()
 
   
 
-  //ETin.sendData();
+  ETin.sendData();
  
  delay(3000);
   
