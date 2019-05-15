@@ -62,7 +62,7 @@ int valorSensorLlama = 1; // Estado sensor Llama
 const int Led = 12;
 
 int valorHigrometro;
-int valor
+int valor;
 
 void imprimirFecha(DateTime fecha);
 
@@ -97,14 +97,12 @@ void loop()
             estadoPIR = 0;
             break;
             
-    case 0: // Alarma apagada, esperando a que se el usuario la inicie
+    case 0: // Alarma apagada, esperando a que el usuario la inicie
             if (teclaPulsada == 'A')
             {
               estadoPIR = 1;
-              digitalWrite(Led, HIGH);
-              delay(5000); // Esperamos 10 segundos a que el usuario se aleje
-              digitalWrite(Led, LOW);
-              
+              delay(10000); // Esperamos 10 segundos a que el usuario se aleje
+              avisarAlarmaLCD();
               //AVISAR LCD QUE SE ALEJE
             }
             break;
@@ -136,7 +134,7 @@ void loop()
             digitalWrite(Led, HIGH);
             delay(5000); //Alarma desactivada
             Serial.println("ALARMA DESACTIVADA");
-            digitalWrite(Led, LOW);*/
+            digitalWrite(Led, LOW);
             break; 
   }
   
@@ -148,7 +146,6 @@ void loop()
     digitalWrite(Led, HIGH);
     digitalWrite(Buzzer, HIGH);
     delay(500);
-    digitalWrite(Led, LOW);
     digitalWrite(Buzzer, LOW);
     delay(500);
  }
@@ -170,6 +167,25 @@ void loop()
  }
 
  delay(1000);
+}
+
+void avisarAlarmaLCD()
+{
+  int contador = 10;
+  
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("ALARMA INICIADA");
+  lcd.setCursor(0,1);
+
+  while(contador > 0)
+  {
+    lcd.print(contador);
+    delay(1000);
+  }
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("ALARMA CONECTADA");
 }
 
 void activarAlarma(int alarma)
