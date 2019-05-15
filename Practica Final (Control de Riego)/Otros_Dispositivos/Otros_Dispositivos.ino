@@ -61,10 +61,9 @@ int valorSensorLlama = 1; // Estado sensor Llama
 
 const int Led = 12;
 
-int valorHigrometro;
-int valor;
-
-void imprimirFecha(DateTime fecha);
+int higrometroLCD;
+float temperaturaLCD, humedadLCD;
+String ubicacionLCD, estadoTalloLCD, fechaLCD;
 
 void setup()
 {
@@ -82,10 +81,6 @@ void setup()
 
 void loop() 
 {
-  /*imprimirLCDTempyHum(26,55.5);
-  delay(10000);
-  imprimirLocalizacionFecha("Salamanca","22-Abril");
-  delay(10000);*/
 
   valorPIR = digitalRead(PIR);
   teclaPulsada = tecladoMembrana.getKey();
@@ -114,7 +109,7 @@ void loop()
             break;
 
      case 2:  
-          /*  while(valorBoton != 0)
+            while(valorBoton != 0)
             {
               Serial.println("ALARMA ACTIVADA");
               digitalWrite(Led, HIGH);
@@ -127,7 +122,7 @@ void loop()
               valorBoton = digitalRead(boton);
             }
             digitalWrite(Led, LOW);
-            */
+            
             alarma = 1;
             activarAlarma(alarma);
             estadoPIR = -1;
@@ -160,13 +155,26 @@ void loop()
   Serial.println(recibido.estadoTallo);
 
   String fechaYhoraString(recibido.fechaYhora);
+  String ubicacionString(recibido.ubicacion);
+  String estadoTalloString(recibido.estadoTallo);
 
-  //COPIAR A NUEVAS VARIABLES
+  higrometroLCD = recibido.higrometro;
+  temperaturaLCD = recibido.temperatura;
+  humedadLCD = recibido.humedad;
+  fechaLCD = fechaYhoraString;
+  ubicacionLCD = ubicacionString;
+  estadoTalloLCD = estadoTalloString;
+
+  imprimirLCDTempyHum(26,55.5);
+  delay(10000);
   
-  
+  imprimirLocalizacionFecha("Salamanca","22-Abril");
+  delay(10000);
+
+  imprimirHumedadTierraYTallo(50,"+Torcido");
+  delay(10000);
  }
-
- delay(1000);
+ 
 }
 
 void avisarAlarmaLCD()
@@ -226,7 +234,7 @@ void imprimirLCDTempyHum(float temperatura, float humedad)
    lcd.setCursor(0,0);
    lcd.print("TEMP: ");
    lcd.print(temperatura);
-   lcd.print(" %");
+   lcd.print(" gC");
    lcd.setCursor(0,1);
    lcd.print("HUMD: ");
    lcd.print(humedad);
@@ -242,6 +250,18 @@ void imprimirLocalizacionFecha(String localizacion, String fecha)
    lcd.setCursor(0,1);
    lcd.print("FECHA: ");
    lcd.print(fecha);
+}
+
+void imprimirHumedadTierraYTallo(int higrometro, String estadoTallo)
+{
+   lcd.clear();
+   lcd.setCursor(0,0);
+   lcd.print("HUMD TIERR: ");
+   lcd.print(higrometro);
+   lcd.print(" %");
+   lcd.setCursor(0,1);
+   lcd.print("TALLO: ");
+   lcd.print(estadoTallo);
 }
 
 void imprimirFecha(DateTime fecha)
