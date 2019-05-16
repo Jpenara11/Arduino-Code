@@ -1,0 +1,99 @@
+//SoftwareSerial gpsSerial(10, 11); // RX, TX (TX not used)
+const int sentenceSize = 80;
+char sentence[sentenceSize];
+
+void setup()
+{
+ gpsSerial.begin(9600);
+}
+
+void loop()
+{
+/ static int i = 0;
+  if (gpsSerial.available())
+  {
+    char ch = gpsSerial.read();
+    if (ch != '\n' && i < sentenceSize)
+    {
+      sentence[i] = ch;
+      i++;
+    }
+    else
+    {
+     sentence[i] = '\0';
+     i = 0;
+     displayGPS();
+    }
+  }
+}
+
+void displayGPS()
+{
+  char field_1[20];
+  char field_2[20];
+  char letra_1[20];
+  char letra_2[20];
+  char numero[20];
+  char salida[80];
+  getField(field_1, 0);
+  if (strcmp(field_1, "$GPRMC") == 0)
+  {
+    //convertimos el primer numero
+    getField(field_1, 3);  // number
+    number(numero_1,field_1);
+    //primera letra
+    getField(letra_1, 4); // N/S
+   //convertimos el segundo numero
+    getField(field_2, 5);  // number
+    number(numero_2,field_2);
+    //segunda letra
+    getField(letra_2, 6);  // E/W
+
+    sprintf(salida,"%s %s %s %s",letra_1,numero_1,letra_2,numero_2);
+  }
+}
+
+void number(char* numeroViejo,char* numeroNuevo)
+{
+  char aux;
+  int sentencePos = 0;
+  //con el while acortamos el numero de decimales ya que solo queremos 2
+  while (numeroViejo [sentencePos]!='.')
+  {
+      numeroNuevo[sentencePos]=numeroViejo[sentencePos];
+      sentencePos ++;
+    }
+  //secuencia para mover las comas
+   aux=numeroNuevo[sentencePos-1];
+   numeroNuevo[sentencePos-1]=numeroNuevo[sentencePos-2]
+   numeroNuevo[sentencePos-2]=',';
+   numeroNuevo[sentencePos]=aux;
+   buffer[sentencePos+1] = '\0';
+  }
+} 
+
+
+
+
+
+void getField(char* buffer, int index)
+{
+  int sentencePos = 0;
+  int fieldPos = 0;
+  int commaCount = 0;
+  while (sentencePos < sentenceSize)
+  {
+    if (sentence[sentencePos] == ',')
+    {
+      commaCount ++;
+      sentencePos ++;
+    }
+    if (commaCount == index)
+    {
+      buffer[fieldPos] = sentence[sentencePos];
+      fieldPos ++;
+    }
+    sentencePos ++;
+  }
+  buffer[fieldPos] = '\0';
+} 
