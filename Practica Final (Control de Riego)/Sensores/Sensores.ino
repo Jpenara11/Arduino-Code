@@ -202,7 +202,7 @@ void displayGPS()
     String letra_2String(letra_2);
     String numero_2StringString(numero_2);
 
-    localizacion = letra_1String + numero_1String + letra_2String + numero_2StringString;
+    localizacion = letra_1String + " " + numero_1String + " " + letra_2String + " " + numero_2StringString;
   }
 }
 
