@@ -25,11 +25,13 @@ float valorHumedad = 0.0; // Variable donde se almacena el valor de la humedad l
 float valorTemperatura = 0.0; // Variable donde se almacena el valor de la temperatura leido por el DHT11
 DHT dht(SensorTempYHum, DHT11); // Inicializar el sensor DHT11 (Temperatura y Humedad)
 
-const int GpsRx = 4; // Declarar pin 4 GPS pin RX
-const int GpsTx = 3; // Declarar pin 3 GPS pin TX
+const int GpsRx = 10; // Declarar pin 4 GPS pin RX
+const int GpsTx = 11; // Declarar pin 3 GPS pin TX
 String localizacion; // Declarar variable donde se almacena la localización leída por el GPS
 char arrayLocalizacion[30];
-SoftwareSerial gps(4,3); // Declarar objeto GPS
+SoftwareSerial gpsSerial(GpsRx, GpsTx); // Crear objeto GPS
+const int sentenceSize = 80;
+char sentence[sentenceSize];
 
 const int EntradaServo = 6; // Declarar pin 6 servo
 Servo servo; // Declarar objeto servo
@@ -68,7 +70,7 @@ void setup()
   
   rtc3231.adjust(DateTime(F(__DATE__), F(__TIME__))); // Ajustar fecha y hora del reloj
 
-  gps.begin(9600); // Inicializar GPS
+  gpsSerial.begin(9600); // Inicializar GPS
 
   pinMode(EntradaServo, OUTPUT);
   servo.attach(EntradaServo); // Vincular el servo al pin 6
@@ -106,11 +108,24 @@ void loop()
   fechaYhoraActual = horaYFechaActualString(fechaActual); // Convertir fecha y hora a String EJ 14:56 3/5
 
 /*
-  if (gps.available()) // Si el GPS está disponible
+
+  static int i = 0;
+  if (gpsSerial.available())
   {
-    localizacion = gps.read(); // Leemos el dato de la localización
-    Serial.println(localizacion);
+    char ch = gpsSerial.read();
+    if (ch != '\n' && i < sentenceSize)
+    {
+      sentence[i] = ch;
+      i++;
+    }
+    else
+    {
+     sentence[i] = '\0';
+     i = 0;
+     displayGPS();
+    }
   }
+  
 
   if(valorHigrometroMap < 50 || valorFlexometroMap <= 5) // La planta necesita agua, se riega con el motor
   {
@@ -158,6 +173,85 @@ void loop()
  delay(3000);
   
 }
+
+void displayGPS()
+{
+  char field_1[20];
+  char field_2[20];
+  char letra_1[20];
+  char letra_2[20];
+  char numero_1[20];
+  char numero_2[20];
+  char salida[80];
+  getField(field_1, 0);
+  if (strcmp(field_1, "$GPRMC") == 0)
+  {
+    //convertimos el primer numero
+    getField(field_1, 3);  // number
+    number(numero_1,field_1);
+    //primera letra
+    getField(letra_1, 4); // N/S
+   //convertimos el segundo numero
+    getField(field_2, 5);  // number
+    number(numero_2,field_2);
+    //segunda letra
+    getField(letra_2, 6);  // E/W
+
+    String letra_1String(letra_1);
+    String numero_1String(numero_1);
+    String letra_2String(letra_2);
+    String numero_2StringString(numero_2);
+
+    localizacion = letra_1String + numero_1String + letra_2String + numero_2StringString;
+  }
+}
+
+void number(char* numeroViejo,char* numeroNuevo)
+{
+  char aux;
+  int sentencePos = 0;
+  //con el while acortamos el numero de decimales ya que solo queremos 2
+  while (numeroViejo [sentencePos]!='.')
+  {
+      numeroNuevo[sentencePos]=numeroViejo[sentencePos];
+      sentencePos ++;
+  }
+  //secuencia para mover las comas
+   aux=numeroNuevo[sentencePos-1];
+   numeroNuevo[sentencePos-1]=numeroNuevo[sentencePos-2];
+   numeroNuevo[sentencePos-2]=',';
+   numeroNuevo[sentencePos]=aux;
+   
+   
+   // buffer[sentencePos+1] = '\0';
+  
+} 
+
+
+
+
+
+void getField(char* buffer, int index)
+{
+  int sentencePos = 0;
+  int fieldPos = 0;
+  int commaCount = 0;
+  while (sentencePos < sentenceSize)
+  {
+    if (sentence[sentencePos] == ',')
+    {
+      commaCount ++;
+      sentencePos ++;
+    }
+    if (commaCount == index)
+    {
+      buffer[fieldPos] = sentence[sentencePos];
+      fieldPos ++;
+    }
+    sentencePos ++;
+  }
+  buffer[fieldPos] = '\0';
+} 
 
 String horaYFechaActualString(DateTime fechaActual)
 {
