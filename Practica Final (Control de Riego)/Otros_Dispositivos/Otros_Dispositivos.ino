@@ -45,14 +45,14 @@ const byte filasPins[FIL_TECLADO] = { 9, 8, 7, 6 };
 const byte columnasPins[COL_TECLADO] = { 5, 4, 3, 2 };
 Keypad tecladoMembrana = Keypad(makeKeymap(teclas), filasPins, columnasPins, FIL_TECLADO, COL_TECLADO);
 char teclaPulsada;
-char contrasena[TAM_CONTRASENA] = "1998";
+char contrasena[TAM_CONTRASENA] = "3515";
 char claveUsuario[TAM_CONTRASENA];
 int indice = 0;
 int alarma = 1;
 
 const int Buzzer = 11;
 
-const int PIR = 12; // Pin de entrada para el sensor PIR (Passive Infrared Sensor)
+const int PIR = 13; // Pin de entrada para el sensor PIR (Passive Infrared Sensor)
 int estadoPIR = -1; // 4 Estados (-1, 0 ,1 y 2)
 int valorPIR = LOW;  // De inicio el PIR está apagado
 
@@ -73,7 +73,7 @@ void setup()
 
   pinMode(Buzzer, OUTPUT);
   pinMode(PIR, INPUT_PULLUP);
-  pinMode(SensorLlama, INPUT);
+  pinMode(SensorLlama, INPUT_PULLUP);
   pinMode(Led, OUTPUT);
 
   ETout.begin(details(recibido), &Serial);
@@ -81,25 +81,26 @@ void setup()
 
 void loop() 
 {
+  valorPIR = digitalRead(PIR);
 
- /* valorPIR = digitalRead(PIR);
-  teclaPulsada = tecladoMembrana.getKey();
-
+  valorSensorLlama = digitalRead(SensorLlama);
+  
+   if (valorSensorLlama == LOW)
+   {
+      estadoPIR= 2;
+   }
+  
   switch(estadoPIR)
   {
     case -1: // Carga condensadores pre-inicio
             delay(2000); // Esperamos 20 segundos a que se carguen los condensadores
             estadoPIR = 0;
+            Serial.println("ESTADO CARGA CONDENSADORES");
             break;
             
     case 0: // Alarma apagada, esperando a que el usuario la inicie
-            if (teclaPulsada == 'A')
-            {
-              estadoPIR = 1;
-              delay(10000); // Esperamos 10 segundos a que el usuario se aleje
-              avisarAlarmaLCD();
-              //AVISAR LCD QUE SE ALEJE
-            }
+            Serial.println("ESTADO ALARMA APAGADA");
+            detectarTecla();
             break;
             
      case 1:
@@ -107,45 +108,21 @@ void loop()
             if (valorPIR == HIGH) estadoPIR = 2; 
             else estadoPIR = 1;
             break;
-
+            
      case 2:  
-            while(valorBoton != 0)
-            {
-              Serial.println("ALARMA ACTIVADA");
-              digitalWrite(Led, HIGH);
-              digitalWrite(Buzzer, HIGH);
-              delay(500);
+              saltarAlarmaLCD();
+              alarma = 1;
+              activarAlarma(alarma);
+              
+              estadoPIR = 0;
               digitalWrite(Led, LOW);
               digitalWrite(Buzzer, LOW);
-              delay(500);
-              delay(1000);
-              valorBoton = digitalRead(boton);
-            }
-            digitalWrite(Led, LOW);
-            
-            alarma = 1;
-            activarAlarma(alarma);
-            estadoPIR = -1;
-            digitalWrite(Led, HIGH);
-            delay(5000); //Alarma desactivada
-            Serial.println("ALARMA DESACTIVADA");
-            digitalWrite(Led, LOW);
-            break; 
+              delay(5000); //Alarma desactivada
+              desactivarAlarmaLCD();
+              break; 
   }
-  
 
- valorSensorLlama = digitalRead(SensorLlama);
-
- if (valorSensorLlama == LOW)
- {
-    digitalWrite(Led, HIGH);
-    digitalWrite(Buzzer, HIGH);
-    delay(500);
-    digitalWrite(Buzzer, LOW);
-    delay(500);
- }
-*/
- if(ETout.receiveData())
+ /*if(ETout.receiveData())
  {
   Serial.println(recibido.higrometro);
   Serial.println(recibido.humedad);
@@ -166,50 +143,70 @@ void loop()
   estadoTalloLCD = estadoTalloString;
 
   imprimirLCDTempyHum(temperaturaLCD,humedadLCD);
-  delay(10000);
+  delay(5000);
   
   imprimirLocalizacionFecha(ubicacionLCD,fechaLCD);
-  delay(10000);
+  delay(5000);
 
   imprimirHumedadTierraYTallo(higrometroLCD,estadoTalloLCD);
-  delay(10000);
+  delay(5000);
+ }*/
+
+ if(estadoPIR == 0)
+ {
+    detectarTecla();
+    imprimirLCDTempyHum(26.0,33.0);
+    delay(5000);
+  
+    detectarTecla();
+    imprimirLocalizacionFecha("N 44.4 E 55.1","14:56 3/5");
+    delay(5000);
+
+    detectarTecla();
+    imprimirHumedadTierraYTallo(55,"+Torcido");
+    delay(5000);
+
+    detectarTecla();
+
+    if(estadoPIR == 1)
+    {
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("ALARMA CONECTADA");
+    }
  }
- delay(3000);
- 
+
 }
 
-void avisarAlarmaLCD()
+void detectarTecla()
 {
-  int contador = 10;
+  teclaPulsada = tecladoMembrana.getKey();
   
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("ALARMA INICIADA");
-  lcd.setCursor(0,1);
-
-  while(contador > 0)
+  if (teclaPulsada == '*')
   {
-    lcd.print(contador);
-    delay(1000);
+     Serial.println(teclaPulsada);
+     estadoPIR = 1;
+     avisarAlarmaLCD();     
   }
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("ALARMA CONECTADA");
 }
 
 void activarAlarma(int alarma)
 {
-  analogWrite(Buzzer, HIGH);
+  digitalWrite(Led, HIGH);
+  digitalWrite(Buzzer, HIGH);
   Serial.println("ALARMA!!");
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("CLAVE: ");
+  lcd.setCursor(7,0);
   while(alarma == 1)
   {
     teclaPulsada = tecladoMembrana.getKey();
-  
     if(teclaPulsada)
     {
       claveUsuario[indice] = teclaPulsada;
       indice++;
-      Serial.print(teclaPulsada);
+      lcd.print(teclaPulsada);
     }
   
     if(indice == TAM_CONTRASENA - 1)
@@ -217,16 +214,67 @@ void activarAlarma(int alarma)
       indice = 0;
       if(strcmp(claveUsuario, contrasena) == 0)
       {
-        Serial.println("Contraseña: Correcta");
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("CONTRASENA: ");
+        lcd.setCursor(0,1);
+        lcd.print("CORRECTA");
         analogWrite(Buzzer, LOW);
         alarma = 0;
       }
       else
       {
-        Serial.println("Contraseña: Incorrecta");
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("CONTRASENA: ");
+        lcd.setCursor(0,1);
+        lcd.print("INCORRECTA");
+        delay(3000);
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("CLAVE: ");
+        lcd.setCursor(7,0);
       }
     }
   }
+}
+
+void avisarAlarmaLCD()
+{
+  int contador = 10;
+  
+  lcd.clear();
+
+  while(contador > 0)
+  {
+    lcd.setCursor(0,0);
+    lcd.print("ALARMA INICIADA");
+    lcd.setCursor(8,1);
+    lcd.print(contador);
+    delay(1000);
+    contador--;
+    lcd.clear();
+  }
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("ALARMA CONECTADA");
+  delay(3000);
+}
+
+void saltarAlarmaLCD()
+{
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("ALARMA ACTIVADA!");
+}
+
+void desactivarAlarmaLCD()
+{
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("ALARMA APAGADA");
+  delay(3000);
+  lcd.clear();
 }
 
 void imprimirLCDTempyHum(float temperatura, float humedad)
