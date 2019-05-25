@@ -14,7 +14,7 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 
-EasyTransfer ETin;
+EasyTransfer ETin; // Objeto para enviar la estructura de datos
 
 const int HigrometroPin = A0; // Declarar pin A0 Higrometro
 int valorHigrometro = 0; // Variable donde se almacena el valor leido por el Higrometro
@@ -24,7 +24,7 @@ const int FlexometroPin = A1; // Declarar pin A1 Flexometro
 int valorFlexometro = 0; // Variable donde se almacena el valor leido por el Flexometro
 int valorFlexometroMap = 0; // Variable donde almacena el valor mapeado del Flexometro
 String estadoTallo; // Variable donde se almacena el estado del tallo tiene 3 (Recto, Torcido, +Torcido)
-char arrayEstadoTallo[9];
+char arrayEstadoTallo[9]; // Estado del tallo
 
 const int SensorTempYHum = 2; // Declarar pin 2 sensor de humedad y temperatura
 float valorHumedad = 0.0; // Variable donde se almacena el valor de la humedad leido por el DHT11
@@ -34,10 +34,10 @@ DHT dht(SensorTempYHum, DHT11); // Inicializar el sensor DHT11 (Temperatura y Hu
 const int GpsRx = 10; // Declarar pin 4 GPS pin RX
 const int GpsTx = 11; // Declarar pin 3 GPS pin TX
 String localizacion; // Declarar variable donde se almacena la localización leída por el GPS
-char arrayLocalizacion[30];
+char arrayLocalizacion[30]; // Localización en array
 SoftwareSerial gpsSerial(GpsRx, GpsTx); // Crear objeto GPS
-const int sentenceSize = 80;
-char sentence[sentenceSize];
+const int sentenceSize = 80; // Variable para el GPS
+char sentence[sentenceSize]; // Variable para el GPS
 
 const int EntradaServo = 6; // Declarar pin 6 servo
 Servo servo; // Declarar objeto servo
@@ -45,10 +45,10 @@ int cantidadRiego = 5; // Número de veces que el servo se desplaza para regar
 
 
 RTC_DS3231 rtc3231; // Inicializar RTC DS3231 (Reloj y Calendario)
-String fechaYhoraActual;
-char arrayHoraYFecha[12];
+String fechaYhoraActual; // Hora y fecha actual convertida
+char arrayHoraYFecha[12]; // Array con la hora y fecha convertida
 
-struct SEND_DATA_STRUCTURE
+struct SEND_DATA_STRUCTURE // ESTRUCTURA DE DATOS QUE ENVIAREMOS AL ARDUINO ESCLAVO
 {
   int higrometro;
   float humedad;
@@ -58,13 +58,13 @@ struct SEND_DATA_STRUCTURE
   char estadoTallo[9];
 };
 
-struct SEND_DATA_STRUCTURE informacion;
+struct SEND_DATA_STRUCTURE informacion; // Variable que contiene la estructura
 
-String horaYFechaActualString (DateTime fechaActual);
+String horaYFechaActualString (DateTime fechaActual); // Función que calcula le fecha y hora en el formato indicado
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(9600); // Iniciar el puerto serie
   
   dht.begin(); // Se inicia el sensor de temperatura y humedad 
    
@@ -78,13 +78,11 @@ void setup()
 
   gpsSerial.begin(9600); // Inicializar GPS
 
-  pinMode(EntradaServo, OUTPUT);
+  pinMode(EntradaServo, OUTPUT); // Entrada del servo
   servo.attach(EntradaServo); // Vincular el servo al pin 6
   servo.write(0); // Se situa el ángulo de este en 0 grados
 
-  Wire.begin();
-
-  ETin.begin(details(informacion), &Serial);
+  ETin.begin(details(informacion), &Serial); // Iniciar la transferencia entre arduinos serie
 }
 
 void loop() 
@@ -95,9 +93,9 @@ void loop()
   valorFlexometro = analogRead(FlexometroPin); // Lectura Flexometro
   valorFlexometroMap = map(valorFlexometro, 32, 85, 1, 10); // Mapear resultado Flexometro
 
-  if(valorFlexometroMap <= 3) estadoTallo = "+Torcido";
-  else if (valorFlexometroMap >= 4 && valorFlexometroMap <= 7) estadoTallo = "Torcido";
-  else estadoTallo = "Recto";
+  if(valorFlexometroMap <= 3) estadoTallo = "+Torcido"; // Si el valor del flexometro es bajo es porque el tallo está muy torcido
+  else if (valorFlexometroMap >= 4 && valorFlexometroMap <= 7) estadoTallo = "Torcido"; // El tallo está torcido
+  else estadoTallo = "Recto"; // El tallo está recto
     
    
   valorHumedad = dht.readHumidity(); // Leer la humedad relativa
@@ -105,16 +103,16 @@ void loop()
    
   if (isnan(valorHumedad) || isnan(valorTemperatura)) // Comprobar si ha habido un error en la obtención datos
   {
-    Serial.println("ERROR DHT11");
-    return;
+    Serial.println("ERROR DHT11"); // Avisar del error con el DHT11
+    return; // Terminar
   }
 
   DateTime fechaActual = rtc3231.now(); // Obtener fecha actual
   
   fechaYhoraActual = horaYFechaActualString(fechaActual); // Convertir fecha y hora a String EJ 14:56 3/5
 
-  static int i = 0;
-  if (gpsSerial.available())
+  static int i = 0; 
+  if (gpsSerial.available()) // Obtener las coordenadas del GPS
   {
     char ch = gpsSerial.read();
     if (ch != '\n' && i < sentenceSize)
@@ -151,22 +149,26 @@ void loop()
     }
   }
   
-  fechaYhoraActual.toCharArray(arrayHoraYFecha,12);
-  localizacion.toCharArray(arrayLocalizacion, 23);
-  estadoTallo.toCharArray(arrayEstadoTallo, 9);
+  fechaYhoraActual.toCharArray(arrayHoraYFecha,12); // Convertir fecha y hora en array de char
+  localizacion.toCharArray(arrayLocalizacion, 23); // Convertir localizacion en array de char
+  estadoTallo.toCharArray(arrayEstadoTallo, 9); // Convertir estado del tallo en array de char
   
-  informacion.higrometro = valorHigrometroMap;
-  informacion.humedad = valorHumedad;
-  informacion.temperatura = valorTemperatura;
-  memcpy(informacion.fechaYhora, arrayHoraYFecha, strlen(arrayHoraYFecha)+1);
-  memcpy(informacion.ubicacion, arrayLocalizacion, strlen(arrayLocalizacion)+1);
-  memcpy(informacion.estadoTallo, arrayEstadoTallo, strlen(arrayEstadoTallo)+1);
+  informacion.higrometro = valorHigrometroMap; // Insertar información en la estructura
+  informacion.humedad = valorHumedad; // Insertar información en la estructura
+  informacion.temperatura = valorTemperatura; // Insertar información en la estructura
+  memcpy(informacion.fechaYhora, arrayHoraYFecha, strlen(arrayHoraYFecha)+1); // Insertar información en la estructura
+  memcpy(informacion.ubicacion, arrayLocalizacion, strlen(arrayLocalizacion)+1); // Insertar información en la estructura
+  memcpy(informacion.estadoTallo, arrayEstadoTallo, strlen(arrayEstadoTallo)+1); // Insertar información en la estructura
 
-  ETin.sendData();
+  ETin.sendData(); // Enviar información, contiene la estructura con los datos recogidos
  
- delay(3000);
+ delay(3000); // Espera 3 segundos y vuelve a comenzar el ciclo
   
 }
+
+                                    /************************
+                                     * FUNCIONES AUXILIARES *
+                                     ************************/
 
 void displayGPS()
 {
@@ -220,10 +222,6 @@ void number(char* numeroViejo,char* numeroNuevo)
    // buffer[sentencePos+1] = '\0';
   
 } 
-
-
-
-
 
 void getField(char* buffer, int index)
 {

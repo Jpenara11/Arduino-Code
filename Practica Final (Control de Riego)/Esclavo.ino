@@ -35,11 +35,11 @@ struct RECEIVE_DATA_STRUCTURE
   char estadoTallo[9];
 };
 
-struct RECEIVE_DATA_STRUCTURE recibido;
+struct RECEIVE_DATA_STRUCTURE recibido; // Estructura con la información recibida
 
 LiquidCrystal_I2C lcd(POS_LCD, COL, FIL);  // Inicia el LCD con los datos introducidos
 
-char teclas[FIL_TECLADO][COL_TECLADO]
+char teclas[FIL_TECLADO][COL_TECLADO] // Matriz que contiene las teclas del teclado de membrana
 {
   { '1','2','3', 'A' },
   { '4','5','6', 'B' },
@@ -47,16 +47,16 @@ char teclas[FIL_TECLADO][COL_TECLADO]
   { '*','0','#', 'D' }
 };
 
-const byte filasPins[FIL_TECLADO] = { 9, 8, 7, 6 };
-const byte columnasPins[COL_TECLADO] = { 5, 4, 3, 2 };
-Keypad tecladoMembrana = Keypad(makeKeymap(teclas), filasPins, columnasPins, FIL_TECLADO, COL_TECLADO);
-char teclaPulsada;
-char contrasena[TAM_CONTRASENA] = "3515";
-char claveUsuario[TAM_CONTRASENA];
-int indice = 0;
-int alarma = 1;
+const byte filasPins[FIL_TECLADO] = { 9, 8, 7, 6 }; // Array con los pines de las filas del teclado
+const byte columnasPins[COL_TECLADO] = { 5, 4, 3, 2 }; // Array con los pines de las columnas del teclado
+Keypad tecladoMembrana = Keypad(makeKeymap(teclas), filasPins, columnasPins, FIL_TECLADO, COL_TECLADO); // Declarar el objeto teclado de membrana
+char teclaPulsada; // Tecla pulsada
+char contrasena[TAM_CONTRASENA] = "3515"; // Contrasena para desactivar la alarma
+char claveUsuario[TAM_CONTRASENA]; // Clave que introduce el usario cuando se activa la alarma
+int indice = 0; // Variable contador indice
+int alarma = 1; // Flag que indica si la alarma ha sido activada o no
 
-const int Buzzer = 11;
+const int Buzzer = 11; // Pin de entrada del Buzzer
 
 const int PIR = 13; // Pin de entrada para el sensor PIR (Passive Infrared Sensor)
 int estadoPIR = -1; // 4 Estados (-1, 0 ,1 y 2)
@@ -65,38 +65,38 @@ int valorPIR = LOW;  // De inicio el PIR está apagado
 const int SensorLlama = 10; // Pin de entrada para el sensor de Llama Infrarrojo
 int valorSensorLlama = 1; // Estado sensor Llama
 
-const int Led = 12;
+const int Led = 12; // Pin de entrada del LED
 
-int higrometroLCD;
-float temperaturaLCD, humedadLCD;
-String ubicacionLCD, estadoTalloLCD, fechaLCD;
+int higrometroLCD; // Variable donde se almacena el valor a mostrar por la pantalla LCD
+float temperaturaLCD, humedadLCD; // Variable donde se almacena el valor a mostrar por la pantalla LCD
+String ubicacionLCD, estadoTalloLCD, fechaLCD; // Variable donde se almacena el valor a mostrar por la pantalla LCD
 
 void setup()
 {
-  Serial.begin(9600);
-  lcd.init();                      
-  lcd.backlight();
+  Serial.begin(9600); // Iniciar el puerto serie
+  lcd.begin(); // Iniciar la pantalla LCD                       
+  lcd.backlight(); // Encender la retroiluminación de la pantalla LCD
 
-  pinMode(Buzzer, OUTPUT);
-  pinMode(PIR, INPUT_PULLUP);
-  pinMode(SensorLlama, INPUT_PULLUP);
-  pinMode(Led, OUTPUT);
+  pinMode(Buzzer, OUTPUT); // Declarar el Buzzer como salida
+  pinMode(PIR, INPUT_PULLUP); // Declarar el PIR como entrada de tipo PULLUP
+  pinMode(SensorLlama, INPUT_PULLUP); // Declarar el SENSOR DE FUEGO como entrada de tipo PULLUP
+  pinMode(Led, OUTPUT); // Declarar el LED como salida
 
-  ETout.begin(details(recibido), &Serial);
+  ETout.begin(details(recibido), &Serial); // Iniciar la transferencia de información
 }
 
 void loop() 
 {
-  valorPIR = digitalRead(PIR);
+  valorPIR = digitalRead(PIR); // Leer el valor del PIR
 
-  valorSensorLlama = digitalRead(SensorLlama);
+  valorSensorLlama = digitalRead(SensorLlama); // Leer el valor del sensor de llama
   
-   if (valorSensorLlama == LOW)
+   if (valorSensorLlama == LOW) // Si se activa el sensor de llama iniciamos la alarma de igual forma que el PIR
    {
       estadoPIR= 2;
    }
   
-  switch(estadoPIR)
+  switch(estadoPIR) // En función del estado del PIR se realiza una u otra acción
   {
     case -1: // Carga condensadores pre-inicio
             delay(2000); // Esperamos 20 segundos a que se carguen los condensadores
@@ -128,7 +128,7 @@ void loop()
               break; 
   }
 
- if(ETout.receiveData())
+ if(ETout.receiveData()) // Recibimos la información del Arduino maestro
  {
   Serial.println(recibido.higrometro);
   Serial.println(recibido.humedad);
@@ -137,35 +137,35 @@ void loop()
   Serial.println(recibido.ubicacion);
   Serial.println(recibido.estadoTallo);
 
-  String fechaYhoraString(recibido.fechaYhora);
-  String ubicacionString(recibido.ubicacion);
-  String estadoTalloString(recibido.estadoTallo);
+  String fechaYhoraString(recibido.fechaYhora); // Convertimos la variable recibida en String
+  String ubicacionString(recibido.ubicacion); // Convertimos la variable recibida en String
+  String estadoTalloString(recibido.estadoTallo); // Convertimos la variable recibida en String
 
-  higrometroLCD = recibido.higrometro;
-  temperaturaLCD = recibido.temperatura;
-  humedadLCD = recibido.humedad;
-  fechaLCD = fechaYhoraString;
-  ubicacionLCD = ubicacionString;
-  estadoTalloLCD = estadoTalloString;
+  higrometroLCD = recibido.higrometro; // Pasamos la información recibida a las variables del Arduino esclavo
+  temperaturaLCD = recibido.temperatura; // Pasamos la información recibida a las variables del Arduino esclavo
+  humedadLCD = recibido.humedad; // Pasamos la información recibida a las variables del Arduino esclavo
+  fechaLCD = fechaYhoraString; // Pasamos la información recibida a las variables del Arduino esclavo
+  ubicacionLCD = ubicacionString; // Pasamos la información recibida a las variables del Arduino esclavo
+  estadoTalloLCD = estadoTalloString; // Pasamos la información recibida a las variables del Arduino esclavo
  }
 
- if(estadoPIR == 0)
+ if(estadoPIR == 0) // Sacar la información por pantalla mientras no se inicie la alarma
  {
-    detectarTecla();
-    imprimirLCDTempyHum(temperaturaLCD,humedadLCD);
-    delay(5000);
+    detectarTecla(); // Comprobar si el usuario quiere iniciar la alarma
+    imprimirLCDTempyHum(temperaturaLCD,humedadLCD); // Sacar información por pantalla
+    delay(5000); // Esperar 5 segundos para cambiar la información
   
-    detectarTecla();
-    imprimirLocalizacionFecha("N 44.4 E 55.1",fechaLCD);
-    delay(5000);
+    detectarTecla(); // Comprobar si el usuario quiere iniciar la alarma
+    imprimirLocalizacionFecha(ubicacionLCD,fechaLCD); // Sacar información por pantalla
+    delay(5000); // Esperar 5 segundos para cambiar la información
 
-    detectarTecla();
-    imprimirHumedadTierraYTallo(higrometroLCD,estadoTalloLCD);
-    delay(5000);
+    detectarTecla(); // Comprobar si el usuario quiere iniciar la alarma
+    imprimirHumedadTierraYTallo(higrometroLCD,estadoTalloLCD); // Sacar información por pantalla
+    delay(5000); // Esperar 5 segundos para cambiar la información
 
-    detectarTecla();
+    detectarTecla(); // Comprobar si el usuario quiere iniciar la alarma
 
-    if(estadoPIR == 1)
+    if(estadoPIR == 1) // Si se conecta la alarma lo mostramos por pantalla
     {
       lcd.clear();
       lcd.setCursor(0,0);
@@ -175,7 +175,13 @@ void loop()
 
 }
 
-void detectarTecla()
+
+                                    /************************
+                                     * FUNCIONES AUXILIARES *
+                                     ************************/
+
+
+void detectarTecla() // DETECTAR POR EL TECLADO QUÉ TECLA SE HA PULSADO
 {
   teclaPulsada = tecladoMembrana.getKey();
   
@@ -187,7 +193,7 @@ void detectarTecla()
   }
 }
 
-void activarAlarma(int alarma)
+void activarAlarma(int alarma) // SE ACTIVA LA ALARMA, ES PORQUE EL PIR HA DETECTADO LA PRESENCIA DE ALGO
 {
   digitalWrite(Led, HIGH);
   digitalWrite(Buzzer, HIGH);
@@ -196,7 +202,7 @@ void activarAlarma(int alarma)
   lcd.setCursor(0,0);
   lcd.print("CLAVE: ");
   lcd.setCursor(7,0);
-  while(alarma == 1)
+  while(alarma == 1) // La alarma se activa y tiene que introducir correctamente la contraseña, sino no se desconecta
   {
     teclaPulsada = tecladoMembrana.getKey();
     if(teclaPulsada)
@@ -236,7 +242,7 @@ void activarAlarma(int alarma)
   }
 }
 
-void avisarAlarmaLCD()
+void avisarAlarmaLCD() // AVISAR CON MARGEN DE 10 SEGUNDOS PARA QUE EL USUARIO SE ALEJE ANTES DE INICIAR LA ALARMA
 {
   int contador = 10;
   
@@ -258,14 +264,14 @@ void avisarAlarmaLCD()
   delay(3000);
 }
 
-void saltarAlarmaLCD()
+void saltarAlarmaLCD() // AVISO DE QUE LA ALARMA HA SALTADO
 {
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("ALARMA ACTIVADA!");
 }
 
-void desactivarAlarmaLCD()
+void desactivarAlarmaLCD() // AVISO DE QUE LA ALARMA SE HA APAGADO
 {
   lcd.clear();
   lcd.setCursor(0,0);
@@ -274,7 +280,7 @@ void desactivarAlarmaLCD()
   lcd.clear();
 }
 
-void imprimirLCDTempyHum(float temperatura, float humedad)
+void imprimirLCDTempyHum(float temperatura, float humedad) // IMPRIMIR INFORMACIÓN RECIBIDA POR EL ARDUINO MAESTRO POR PANTALLA LCD
 {
    lcd.clear();
    lcd.setCursor(0,0);
@@ -287,7 +293,7 @@ void imprimirLCDTempyHum(float temperatura, float humedad)
    lcd.print(" %");
 }
 
-void imprimirLocalizacionFecha(String localizacion, String fecha)
+void imprimirLocalizacionFecha(String localizacion, String fecha) // IMPRIMIR INFORMACIÓN RECIBIDA POR EL ARDUINO MAESTRO POR PANTALLA LCD
 {
    lcd.clear();
    lcd.setCursor(0,0);
@@ -298,7 +304,7 @@ void imprimirLocalizacionFecha(String localizacion, String fecha)
    lcd.print(fecha);
 }
 
-void imprimirHumedadTierraYTallo(int higrometro, String estadoTallo)
+void imprimirHumedadTierraYTallo(int higrometro, String estadoTallo) // IMPRIMIR INFORMACIÓN RECIBIDA POR EL ARDUINO MAESTRO POR PANTALLA LCD
 {
    lcd.clear();
    lcd.setCursor(0,0);
